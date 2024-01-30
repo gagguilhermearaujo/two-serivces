@@ -5,7 +5,7 @@ option go_package = "./hashing/pb";
 service Hashing {
   rpc CreateHash (CreateHashRequest) returns (CreateHashResponse) {}
   rpc CheckHash (CheckHashRequest) returns (CheckHashResponse) {}
-  // rpc GetHash (HashRequest) returns (HashResponse) {}
+  rpc GetHash (GetHashRequest) returns (GetHashResponse) {}
 }
 
 message CreateHashRequest {
@@ -21,4 +21,11 @@ message CheckHashRequest {
 }
 message CheckHashResponse {
   bool hash_exists = 1;
+}
+
+message GetHashRequest {
+  string payload = 1;
+}
+message GetHashResponse {
+  string hash = 1;
 }

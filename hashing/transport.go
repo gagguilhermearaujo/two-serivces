@@ -11,6 +11,7 @@ import (
 type gRPCServer struct {
 	createHash grpctransport.Handler
 	checkHash  grpctransport.Handler
+	getHash    grpctransport.Handler
 	pb.UnimplementedHashingServer
 }
 
@@ -32,6 +33,15 @@ func (s gRPCServer) CheckHash(ctx context.Context, req *pb.CheckHashRequest) (*p
 	return resp.(*pb.CheckHashResponse), nil
 }
 
+func (s gRPCServer) GetHash(ctx context.Context, req *pb.GetHashRequest) (*pb.GetHashResponse, error) {
+	_, resp, err := s.getHash.ServeGRPC(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	return resp.(*pb.GetHashResponse), nil
+}
+
 func NewGrpcServer(endpoints Endpoints) pb.HashingServer {
 	return &gRPCServer{
 		createHash: grpctransport.NewServer(
@@ -43,6 +53,11 @@ func NewGrpcServer(endpoints Endpoints) pb.HashingServer {
 			endpoints.CheckHash,
 			decodeCheckHashRequest,
 			encodeCheckHashResponse,
+		),
+		getHash: grpctransport.NewServer(
+			endpoints.GetHash,
+			decodeGetHashRequest,
+			encodeGetHashResponse,
 		),
 	}
 }
@@ -81,4 +96,22 @@ func encodeCheckHashResponse(ctx context.Context, response any) (any, error) {
 	}
 
 	return &pb.CheckHashResponse{HashExists: res.HashExists}, nil
+}
+
+func decodeGetHashRequest(ctx context.Context, request any) (any, error) {
+	req, ok := request.(*pb.GetHashRequest)
+	if !ok {
+		return nil, errors.New("invalid request body")
+	}
+
+	return endpointGetHashRequest{Payload: req.Payload}, nil
+}
+
+func encodeGetHashResponse(ctx context.Context, response any) (any, error) {
+	res, ok := response.(endpointGetHashResponse)
+	if !ok {
+		return nil, errors.New("invalid response body")
+	}
+
+	return &pb.GetHashResponse{Hash: res.Hash}, nil
 }

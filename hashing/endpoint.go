@@ -9,12 +9,14 @@ import (
 type Endpoints struct {
 	CreateHash endpoint.Endpoint
 	CheckHash  endpoint.Endpoint
+	GetHash    endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
 		CreateHash: makeCreateHashEndpoint(s),
 		CheckHash:  makeCheckHashEndpoint(s),
+		GetHash:    makeGetHashEndpoint(s),
 	}
 }
 
@@ -35,7 +37,7 @@ type endpointCreateHashResponse struct {
 
 func makeCheckHashEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request any) (any, error) {
-		req := request.(endpointCheckHashRequest)
+		req := request.(endpointCreateHashRequest)
 		hashExists, err := s.CheckHash(req.Payload)
 		return endpointCheckHashResponse{HashExists: hashExists}, err
 	}
@@ -46,4 +48,19 @@ type endpointCheckHashRequest struct {
 }
 type endpointCheckHashResponse struct {
 	HashExists bool `json:"hash_exists,omitempty"`
+}
+
+func makeGetHashEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request any) (any, error) {
+		req := request.(endpointGetHashRequest)
+		hash, err := s.GetHash(req.Payload)
+		return endpointGetHashResponse{Hash: hash}, err
+	}
+}
+
+type endpointGetHashRequest struct {
+	Payload string `json:"payload"`
+}
+type endpointGetHashResponse struct {
+	Hash string `json:"hash,omitempty"`
 }

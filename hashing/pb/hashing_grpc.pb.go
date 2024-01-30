@@ -24,6 +24,7 @@ const _ = grpc.SupportPackageIsVersion7
 type HashingClient interface {
 	CreateHash(ctx context.Context, in *CreateHashRequest, opts ...grpc.CallOption) (*CreateHashResponse, error)
 	CheckHash(ctx context.Context, in *CheckHashRequest, opts ...grpc.CallOption) (*CheckHashResponse, error)
+	GetHash(ctx context.Context, in *GetHashRequest, opts ...grpc.CallOption) (*GetHashResponse, error)
 }
 
 type hashingClient struct {
@@ -52,12 +53,22 @@ func (c *hashingClient) CheckHash(ctx context.Context, in *CheckHashRequest, opt
 	return out, nil
 }
 
+func (c *hashingClient) GetHash(ctx context.Context, in *GetHashRequest, opts ...grpc.CallOption) (*GetHashResponse, error) {
+	out := new(GetHashResponse)
+	err := c.cc.Invoke(ctx, "/Hashing/GetHash", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // HashingServer is the server API for Hashing service.
 // All implementations must embed UnimplementedHashingServer
 // for forward compatibility
 type HashingServer interface {
 	CreateHash(context.Context, *CreateHashRequest) (*CreateHashResponse, error)
 	CheckHash(context.Context, *CheckHashRequest) (*CheckHashResponse, error)
+	GetHash(context.Context, *GetHashRequest) (*GetHashResponse, error)
 	mustEmbedUnimplementedHashingServer()
 }
 
@@ -70,6 +81,9 @@ func (UnimplementedHashingServer) CreateHash(context.Context, *CreateHashRequest
 }
 func (UnimplementedHashingServer) CheckHash(context.Context, *CheckHashRequest) (*CheckHashResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method CheckHash not implemented")
+}
+func (UnimplementedHashingServer) GetHash(context.Context, *GetHashRequest) (*GetHashResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GetHash not implemented")
 }
 func (UnimplementedHashingServer) mustEmbedUnimplementedHashingServer() {}
 
@@ -120,6 +134,24 @@ func _Hashing_CheckHash_Handler(srv interface{}, ctx context.Context, dec func(i
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Hashing_GetHash_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetHashRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(HashingServer).GetHash(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/Hashing/GetHash",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(HashingServer).GetHash(ctx, req.(*GetHashRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // Hashing_ServiceDesc is the grpc.ServiceDesc for Hashing service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -134,6 +166,10 @@ var Hashing_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "CheckHash",
 			Handler:    _Hashing_CheckHash_Handler,
+		},
+		{
+			MethodName: "GetHash",
+			Handler:    _Hashing_GetHash_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
