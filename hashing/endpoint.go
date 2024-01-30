@@ -37,7 +37,7 @@ type endpointCreateHashResponse struct {
 
 func makeCheckHashEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request any) (any, error) {
-		req := request.(endpointCreateHashRequest)
+		req := request.(endpointCheckHashRequest)
 		hashExists, err := s.CheckHash(req.Payload)
 		return endpointCheckHashResponse{HashExists: hashExists}, err
 	}
