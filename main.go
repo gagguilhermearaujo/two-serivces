@@ -5,7 +5,6 @@ import (
 	"net"
 
 	"github.com/gagguilhermearaujo/two-services/hashing"
-	"github.com/gagguilhermearaujo/two-services/hashing/pb"
 	"google.golang.org/grpc"
 )
 
@@ -20,7 +19,7 @@ func main() {
 	grpcServer := hashing.NewGrpcServer(hashingEndpoints)
 
 	baseServer := grpc.NewServer()
-	pb.RegisterHashingServer(baseServer, grpcServer)
+	hashing.RegisterHashingServer(baseServer, grpcServer)
 	baseServer.Serve(grpcListener)
 
 }

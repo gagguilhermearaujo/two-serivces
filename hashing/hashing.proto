@@ -1,6 +1,6 @@
 syntax = "proto3";
 
-option go_package = "./hashing/pb";
+option go_package = "./hashing";
 
 service Hashing {
   rpc CreateHash (CreateHashRequest) returns (CreateHashResponse) {}

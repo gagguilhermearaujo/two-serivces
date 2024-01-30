@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 
-	"github.com/gagguilhermearaujo/two-services/hashing/pb"
 	grpctransport "github.com/go-kit/kit/transport/grpc"
 )
 
@@ -12,37 +11,37 @@ type gRPCServer struct {
 	createHash grpctransport.Handler
 	checkHash  grpctransport.Handler
 	getHash    grpctransport.Handler
-	pb.UnimplementedHashingServer
+	UnimplementedHashingServer
 }
 
-func (s gRPCServer) CreateHash(ctx context.Context, req *pb.CreateHashRequest) (*pb.CreateHashResponse, error) {
+func (s gRPCServer) CreateHash(ctx context.Context, req *CreateHashRequest) (*CreateHashResponse, error) {
 	_, resp, err := s.createHash.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*pb.CreateHashResponse), nil
+	return resp.(*CreateHashResponse), nil
 }
 
-func (s gRPCServer) CheckHash(ctx context.Context, req *pb.CheckHashRequest) (*pb.CheckHashResponse, error) {
+func (s gRPCServer) CheckHash(ctx context.Context, req *CheckHashRequest) (*CheckHashResponse, error) {
 	_, resp, err := s.checkHash.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*pb.CheckHashResponse), nil
+	return resp.(*CheckHashResponse), nil
 }
 
-func (s gRPCServer) GetHash(ctx context.Context, req *pb.GetHashRequest) (*pb.GetHashResponse, error) {
+func (s gRPCServer) GetHash(ctx context.Context, req *GetHashRequest) (*GetHashResponse, error) {
 	_, resp, err := s.getHash.ServeGRPC(ctx, req)
 	if err != nil {
 		return nil, err
 	}
 
-	return resp.(*pb.GetHashResponse), nil
+	return resp.(*GetHashResponse), nil
 }
 
-func NewGrpcServer(endpoints Endpoints) pb.HashingServer {
+func NewGrpcServer(endpoints Endpoints) HashingServer {
 	return &gRPCServer{
 		createHash: grpctransport.NewServer(
 			endpoints.CreateHash,
@@ -63,7 +62,7 @@ func NewGrpcServer(endpoints Endpoints) pb.HashingServer {
 }
 
 func decodeCreateHashRequest(ctx context.Context, request any) (any, error) {
-	req, ok := request.(*pb.CreateHashRequest)
+	req, ok := request.(*CreateHashRequest)
 	if !ok {
 		return nil, errors.New("invalid request body")
 	}
@@ -77,11 +76,11 @@ func encodeCreateHashResponse(ctx context.Context, response any) (any, error) {
 		return nil, errors.New("invalid response body")
 	}
 
-	return &pb.CreateHashResponse{Hash: res.Hash}, nil
+	return &CreateHashResponse{Hash: res.Hash}, nil
 }
 
 func decodeCheckHashRequest(ctx context.Context, request any) (any, error) {
-	req, ok := request.(*pb.CheckHashRequest)
+	req, ok := request.(*CheckHashRequest)
 	if !ok {
 		return nil, errors.New("invalid request body")
 	}
@@ -95,11 +94,11 @@ func encodeCheckHashResponse(ctx context.Context, response any) (any, error) {
 		return nil, errors.New("invalid response body")
 	}
 
-	return &pb.CheckHashResponse{HashExists: res.HashExists}, nil
+	return &CheckHashResponse{HashExists: res.HashExists}, nil
 }
 
 func decodeGetHashRequest(ctx context.Context, request any) (any, error) {
-	req, ok := request.(*pb.GetHashRequest)
+	req, ok := request.(*GetHashRequest)
 	if !ok {
 		return nil, errors.New("invalid request body")
 	}
@@ -113,5 +112,5 @@ func encodeGetHashResponse(ctx context.Context, response any) (any, error) {
 		return nil, errors.New("invalid response body")
 	}
 
-	return &pb.GetHashResponse{Hash: res.Hash}, nil
+	return &GetHashResponse{Hash: res.Hash}, nil
 }
