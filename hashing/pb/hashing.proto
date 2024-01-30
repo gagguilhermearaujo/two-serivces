@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+option go_package = "./hashing/pb";
+
+service Hashing {
+  rpc CreateHash (CreateHashRequest) returns (CreateHashResponse) {}
+  rpc CheckHash (CheckHashRequest) returns (CheckHashResponse) {}
+  // rpc GetHash (HashRequest) returns (HashResponse) {}
+}
+
+message CreateHashRequest {
+  string payload = 1;
+}
+message CreateHashResponse {
+  string hash = 1;
+}
+
+
+message CheckHashRequest {
+  string payload = 1;
+}
+message CheckHashResponse {
+  bool hash_exists = 1;
+}
