@@ -4,14 +4,15 @@ import (
 	"log"
 	"net"
 
+	"github.com/gagguilhermearaujo/two-services/gateway"
 	"github.com/gagguilhermearaujo/two-services/hashing"
 	"google.golang.org/grpc"
 )
 
 func main() {
-	grpcListener, err := net.Listen("tcp", ":50051")
+	hashingListener, err := net.Listen("tcp", ":50051")
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatalf("Failed to listen hashing service: %v", err)
 	}
 
 	hashingService := hashing.NewService()
@@ -20,6 +21,10 @@ func main() {
 
 	baseServer := grpc.NewServer()
 	hashing.RegisterHashingServer(baseServer, grpcServer)
-	baseServer.Serve(grpcListener)
+	go baseServer.Serve(hashingListener)
+
+	gatewayServer := gateway.NewGatewayServer()
+	gatewayServer.MakeEndpoints()
+	gatewayServer.Serve()
 
 }

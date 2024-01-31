@@ -30,7 +30,7 @@ func (s *service) CheckHash(payload string) (hashExists bool, err error) {
 func (s *service) GetHash(payload string) (hashedString string, err error) {
 	hashedString, hashExists := s.hashes[payload]
 	if !hashExists {
-		err = errors.New("Has does not exists")
+		err = errors.New("Hash does not exists")
 	}
 	return
 }

@@ -1,24 +1,56 @@
-package hashing
+package gateway
 
 import (
 	"context"
 
-	"github.com/go-kit/kit/endpoint"
+	"github.com/gagguilhermearaujo/two-services/hashing"
+	"github.com/gofiber/fiber/v2"
 )
 
-type createHashRequest struct {
-	Payload string `json:"payload"`
+func makeCreateHashEndpoint(s *GatewayServer) {
+	s.fiberApp.Post("/CreateHash", func(c *fiber.Ctx) error {
+		req := new(hashing.CreateHashRequest)
+		err := c.BodyParser(req)
+		if err != nil {
+			return err
+		}
+		res, err := s.hashingService.CreateHash(context.TODO(), req)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(&res)
+	})
 }
 
-type createHashRespose struct {
-	Hash string `json:"hash,omitempty"`
-	Err  error  `json:"error,omitempty"`
+func makeCheckHashEndpoint(s *GatewayServer) {
+	s.fiberApp.Post("/CheckHash", func(c *fiber.Ctx) error {
+		req := new(hashing.CheckHashRequest)
+		err := c.BodyParser(req)
+		if err != nil {
+			return err
+		}
+		res, err := s.hashingService.CheckHash(context.TODO(), req)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(map[string]bool{"hash_exists": res.HashExists})
+	})
 }
 
-func makeCreateHashEndpoint(s Service) endpoint.Endpoint {
-	return func(ctx context.Context, request any) (any, error) {
-		req := request.(createHashRequest)
-		hash, err := s.CreateHash(req.Payload)
-		return createHashRespose{Hash: hash, Err: err}, nil
-	}
+func makeGetHashEndpoint(s *GatewayServer) {
+	s.fiberApp.Post("/GetHash", func(c *fiber.Ctx) error {
+		req := new(hashing.GetHashRequest)
+		err := c.BodyParser(req)
+		if err != nil {
+			return err
+		}
+		res, err := s.hashingService.GetHash(context.TODO(), req)
+		if err != nil {
+			return err
+		}
+
+		return c.JSON(&res)
+	})
 }

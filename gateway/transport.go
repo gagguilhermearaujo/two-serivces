@@ -1,31 +1,37 @@
-package hashing
+package gateway
 
 import (
-	"context"
-	"encoding/json"
-	"net/http"
+	"log"
 
-	httptransport "github.com/go-kit/kit/transport/http"
+	"github.com/gagguilhermearaujo/two-services/hashing"
+	"github.com/gofiber/fiber/v2"
+	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
-func MakeHandler(s Service) {
-	createHashHandler := httptransport.NewServer(
-		makeCreateHashEndpoint(s),
-		decodeCreateHashRequest,
-		encodeResponse,
-	)
-	http.Handle("/CreateHash", createHashHandler)
-	http.ListenAndServe(":8080", nil)
-}
-
-func decodeCreateHashRequest(_ context.Context, r *http.Request) (interface{}, error) {
-	var request createHashRequest
-	if err := json.NewDecoder(r.Body).Decode(&request); err != nil {
-		return nil, err
+func NewGatewayServer() *GatewayServer {
+	conn, err := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+	if err != nil {
+		log.Fatalf("did not connect to hashing service: %v", err)
 	}
-	return request, nil
+
+	return &GatewayServer{
+		fiberApp:       fiber.New(),
+		hashingService: hashing.NewHashingClient(conn),
+	}
 }
 
-func encodeResponse(_ context.Context, w http.ResponseWriter, response interface{}) error {
-	return json.NewEncoder(w).Encode(response)
+type GatewayServer struct {
+	fiberApp       *fiber.App
+	hashingService hashing.HashingClient
+}
+
+func (s GatewayServer) Serve() {
+	s.fiberApp.Listen(":3000")
+}
+
+func (s *GatewayServer) MakeEndpoints() {
+	makeCreateHashEndpoint(s)
+	makeCheckHashEndpoint(s)
+	makeGetHashEndpoint(s)
 }
